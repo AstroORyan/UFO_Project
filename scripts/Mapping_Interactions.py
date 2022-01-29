@@ -14,6 +14,7 @@ actually start to make a difference.
 """
 import folium
 from folium.plugins import MarkerCluster
+
 import tabula
 import os
 from os import listdir
@@ -22,6 +23,7 @@ import pandas as pd
 import requests
 import time
 import numpy as np
+import glob
 
 class Run():
     def __init__(self):
@@ -32,19 +34,15 @@ class Run():
         return Map
 
     def Data_Scraper(self,run):
-        data_table_dir = 'C:\\Users\\oryan\\Documents\\The UFO Project\\Data\\'
-        files = []
-        for f in listdir(data_table_dir):
-            if f.endswith('.pdf'):
-                files.append(path.join(f))
+        data_table_dir = 'C:\\Users\\David O\'Ryan\\Documents\\coding_projects\\UFO_Project\\data\\'
+        files = glob.glob(data_table_dir + '*.pdf')
                 
         GPS_Coords = []
         Progress = 0
         for i in range(len(files)):
             Year = 1997 + i
             file = 'GPS_Coords_Year_'+str(Year)+'.npy'
-            full_path = data_table_dir+files[i]
-            table = tabula.read_pdf(full_path,pages='all',multiple_tables=False)
+            table = tabula.read_pdf(files[i],pages='all',multiple_tables=False)
             data = table[0]
             Date = data['Unnamed: 0']
             Time = data['Date']
@@ -72,7 +70,7 @@ class Run():
                 
                 np.save(data_table_dir+file+'.npy',GPS_Coords)
                 
-        return GPS_Coords,Town,Description
+        return GPS_Coords,Date,Time,Town,Description
 
     def query_address(self,Town_Name,Country):
         """
@@ -134,21 +132,25 @@ def main():
   """
   This is the master part of the script which will call all the functions required to build the map.
   """
-  directory = 'C:\\Users\\oryan\\Documents\\The UFO Project\\'
+  directory = 'C:\\Users\\David O\'Ryan\\Documents\\coding_projects\\UFO_Project\\'
   run = Run()
   m = run.Underlying_Map_Init()
-  marker_positions,Towns,Incident_Descriptions = run.Data_Scraper(run)
+  marker_positions,date,time,Towns,Incident_Descriptions = run.Data_Scraper(run)
   description_counter = 0
   for i in range(len(marker_positions)):
       marker = marker_positions[i]
       if str(Towns[i]) == 'nan':
           description_counter += 1
       description = Incident_Descriptions[int(description_counter)]
-      folium.Marker([marker[0],marker[1]],popup=description).add_to(m)
+      folium.Marker(
+          [marker[0],marker[1]],
+          popup=folium.Popup('Sighted on {date[i]} at {time[i]}',maxwidth=450)
+          ).add_to(m)
+          
       description_counter += 1
 
       
-  m.save(directory+'test_map.html')
+  m.save(directory+'results\\test_map.html')
   
   print('Algorithm Complete.')
 
