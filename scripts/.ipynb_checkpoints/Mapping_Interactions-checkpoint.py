@@ -34,10 +34,8 @@ class Run():
         return Map
 
     def Data_Scraper(self,run):
-        data_table_dir = 'C:/Users/dorya/Documents/UFO_Project/data/'
+        data_table_dir = 'C:\\Users\\David O\'Ryan\\Documents\\coding_projects\\UFO_Project\\data\\'
         files = glob.glob(data_table_dir + '*.pdf')
-
-        assert len(files) > 0
                 
         GPS_Coords = []
         Progress = 0
